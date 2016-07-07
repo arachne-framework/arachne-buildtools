@@ -1,0 +1,6 @@
+{:project org.arachne-framework/arachne-buildtools
+ :version {:major 0, :minor 1, :patch 0}
+ :description "Build tools for managing and building Arachne's core modules"
+ :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
+ :deps [[boot/core "2.6.0" :scope "test"]
+        [boot/base "2.6.0" :scope "test"]]}

@@ -1,0 +1,5 @@
+.nrepl-*
+project.clj
+.#*
+.git-deps
+target
