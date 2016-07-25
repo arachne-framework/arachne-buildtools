@@ -10,8 +10,8 @@
   "Throw an exception if the git project at the given directory is not clean."
   [git-dir msg]
   (let [f (.getAbsoluteFile (io/file git-dir))
-        status (:out (sh/sh "git" "status" :dir git-dir))]
-    (when-not (re-find #"nothing to commit, working directory clean" status)
+        status (:out (sh/sh "git" "status" "--porcelain" :dir git-dir))]
+    (when-not (s/blank? status)
       (throw (ex-info msg {:git-dir git-dir, :file f})))))
 
 (defn current-sha
