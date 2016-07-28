@@ -130,7 +130,7 @@
     :source-paths #{"test" "dev"}
     :dependencies #(process-deps (concat % (:deps proj-data)))))
 
-(defn read-project!
+(defn read-project-edn!
   "Imperatively read the project.edn file and use it to set env and
   task options. Every time this is run, it will also spit out an
   updated project.clj file."
