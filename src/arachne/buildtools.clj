@@ -107,7 +107,7 @@
         proj-data (edn/read-string (slurp proj-file))
         dep-paths (resource-paths proj-data)]
     (map (fn [dep-path]
-           (.getCanonicalPath (File. there dep-path)))
+           (.getPath (File. there dep-path)))
       dep-paths)))
 
 (defn- resource-paths
