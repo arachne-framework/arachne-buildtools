@@ -1,7 +1,6 @@
 (ns arachne.buildtools
   "Tools for building the Arachne project itself."
   {:boot/export-tasks true}
-  (:import [java.io File])
   (:require [clojure.set :as set]
             [clojure.java.io :as io]
             [clojure.edn :as edn]
@@ -25,8 +24,7 @@
                :dependencies (vec
                                (filter (complement dev-dep?)
                                  (b/get-env :dependencies)))
-               :source-paths (set (concat (b/get-env :source-paths)
-                                          (b/get-env :resource-paths)))
+               :source-paths (set (b/get-env :resource-paths))
                :test-paths #{"test" "dev"}
                :profiles {:dev {:dependencies (vec
                                                 (filter dev-dep?
@@ -65,9 +63,9 @@
 (defn- transitive-deps
   "Get the transitive dependencies of a local dependency"
   [project-location]
-  (let [here (File. ".")
-        there (File. here project-location)
-        proj-file (File. there "project.edn")
+  (let [here (io/file ".")
+        there (io/file here project-location)
+        proj-file (io/file there "project.edn")
         proj-data (edn/read-string (slurp proj-file))
         trans-deps (filter (fn [dep]
                              (not-any? #(= :scope %) dep))
@@ -101,13 +99,13 @@
 (defn- local-dep-paths
   "Given the relative path of another project, return *its* resource-paths"
   [project-location]
-  (let [here (File. ".")
-        there (File. here project-location)
-        proj-file (File. there "project.edn")
+  (let [here (io/file ".")
+        there (io/file here project-location)
+        proj-file (io/file there "project.edn")
         proj-data (edn/read-string (slurp proj-file))
         dep-paths (resource-paths proj-data)]
     (map (fn [dep-path]
-           (.getPath (File. there dep-path)))
+           (.getPath (io/file there dep-path)))
       dep-paths)))
 
 (defn- resource-paths
