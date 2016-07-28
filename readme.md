@@ -110,3 +110,15 @@ passed to `git checkout`. As a matter of convention, it is strongly
 recommended to avoid "unstable" references such as `HEAD` or branch
 names so that dependencies indicate a repeatable, deterministic
 reference.
+
+## Local Dependencies
+
+For an improved local workflow, you may also specify a relative path to another
+buildtools project *instead* of a version string. In this case, buildtools will
+configure your boot project to add the `:resource-paths` and transitive
+dependencies of the target project directly to your project, allowing you to
+make changes to both projects without stopping to install and update
+dependencies. This works transitively across multiple projects.
+
+Note that you cannot use `boot build` if your project has a local dependency
+declared.
