@@ -55,7 +55,9 @@
   (let [clone-dir-file (io/file (str "./.git-deps/") (str artifact))
         clone-dir (.getCanonicalPath clone-dir-file)]
     (if (.exists clone-dir-file)
-      (exec! "git" "fetch" repo :dir clone-dir)
+      (do
+        (exec! "git" "remote" "set-url" "origin" repo :dir clone-dir)
+        (exec! "git" "fetch" :dir clone-dir))
       (exec! "git" "clone" repo clone-dir))
     (exec! "git" "checkout" ref :dir clone-dir)
     (let [result (exec! "boot" "build" :dir clone-dir)]
