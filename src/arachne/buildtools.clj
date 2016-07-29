@@ -158,11 +158,11 @@
         proj-data (edn/read-string (slurp proj-file))]
     (doseq [[name version] (:deps proj-data)]
       (when (local-dep? version)
-        (throw ex-info
-          (format "Cannot build: project.edn has a local dependency, [%s %s]"
-            name version)
-          {:dep-name name
-           :dep-version version})))))
+        (throw (ex-info
+                 (format "Cannot build: project.edn has a local dependency, [%s %s]"
+                   name version)
+                 {:dep-name    name
+                  :dep-version version}))))))
 
 (b/deftask build
   "Build the project and install to local maven repo"
