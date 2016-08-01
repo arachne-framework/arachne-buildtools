@@ -114,11 +114,21 @@ reference.
 ## Local Dependencies
 
 For an improved local workflow, you may also specify a relative path to another
-buildtools project *instead* of a version string. In this case, buildtools will
-configure your boot project to add the `:resource-paths` and transitive
-dependencies of the target project directly to your project, allowing you to
-make changes to both projects without stopping to install and update
+buildtools project, using the keyword `:local` and a value. For example,
+
+```
+[org.arachne-framework/arachne-core "0.1.0-dev-249d617" :local "../arachne-core"]
+```
+
+In this case, buildtools will configure your boot project to add the
+`:resource-paths` of the target project directly to your project, allowing you
+to make changes to both projects without stopping to install and update
 dependencies. This works transitively across multiple projects.
+
+Because this technique relies upon a normal artifact dependency to establish
+transitive dependencies, you must install the dependency as a normal artifact
+firs. This also means that you will still need to reinstall the artifact and
+restart your JVM if you change the dependencies of a local dependency.
 
 Note that you cannot use `boot build` if your project has a local dependency
 declared.
