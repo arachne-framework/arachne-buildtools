@@ -51,41 +51,20 @@
                            qualifier (str "-" qualifier)
                            :else ""))})))
 
-(defn- local-dep?
-  "Given a dependency version string, return true if it looks like a local
-  dependency reference"
-  [version]
-  (and (string? version)
-    (not (re-matches #"^[0-9]+\..+" version))))
-
-(declare process-deps)
-
-(defn- transitive-deps
-  "Get the transitive dependencies of a local dependency"
-  [project-location]
-  (let [here (io/file ".")
-        there (io/file here project-location)
-        proj-file (io/file there "project.edn")
-        proj-data (edn/read-string (slurp proj-file))
-        trans-deps (filter (fn [dep]
-                             (not-any? #(= :scope %) dep))
-                     (:deps proj-data))]
-    (process-deps trans-deps)))
+(defn- local-path
+  "Given a dependency, return the local path (if there is one)"
+  [dep]
+  (some (fn [[key val]]
+          (when (= :local key) val))
+    (partition 2 1 dep)))
 
 (defn- process-dep
-  "Given a dependency form from project.edn:
-
-   - If it's a git dependnecy, clone/update and install
-   - If it's a local dep, swap in the transitive deps
-   - If it's a vanilla artifact dependency, no-op
-
-   No matter what, always return a *seq* of deps."
+  "Given a dependency form from project.edn, update any git repositories and
+  return the standard dependency vector"
   [[name version :as dep]]
-  (if (string? version)
-    (if (local-dep? version)
-      (transitive-deps version)
-      [dep])
-    [[name (g/ensure-installed! dep)]]))
+  (if (vector? version)
+    [name (g/ensure-installed! dep)]
+    dep))
 
 (defn- process-deps
   "Process dependencies into the canonical format"
@@ -93,7 +72,7 @@
   (filter (fn [[artifact _ :as dep]]
             (and dep
               (not= artifact 'org.arachne-framework/arachne-buildtools)))
-    (mapcat process-dep deps)))
+    (map process-dep deps)))
 
 (declare resource-paths)
 (defn- local-dep-paths
@@ -112,9 +91,9 @@
   "Determine the correct resource paths for this project, including local
   dependencies on other projects using the buildtools."
   [proj-data]
-  (set (reduce (fn [paths [_ version :as dep]]
-                 (if (local-dep? version)
-                   (concat paths (local-dep-paths version))
+  (set (reduce (fn [paths dep]
+                 (if-let [proj-path (local-path dep)]
+                   (concat paths (local-dep-paths proj-path))
                    paths))
          #{"src" "resources"}
          (:deps proj-data))))
@@ -156,13 +135,12 @@
   []
   (let [proj-file (io/file "project.edn")
         proj-data (edn/read-string (slurp proj-file))]
-    (doseq [[name version] (:deps proj-data)]
-      (when (local-dep? version)
+    (doseq [dep (:deps proj-data)]
+      (when (local-path dep)
         (throw (ex-info
-                 (format "Cannot build: project.edn has a local dependency, [%s %s]"
-                   name version)
-                 {:dep-name    name
-                  :dep-version version}))))))
+                 (format "Cannot build: project.edn has a local dependency, %s"
+                   dep)
+                 {:dep dep}))))))
 
 (b/deftask build
   "Build the project and install to local maven repo"
