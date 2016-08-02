@@ -71,10 +71,10 @@
 (defn- process-deps
   "Process dependencies into the canonical format"
   [deps]
-  (filter (fn [[artifact _ :as dep]]
-            (and dep
-              (not= artifact 'org.arachne-framework/arachne-buildtools)))
-    (map process-dep deps)))
+  (doall (filter (fn [[artifact _ :as dep]]
+                   (and dep
+                     (not= artifact 'org.arachne-framework/arachne-buildtools)))
+           (map process-dep deps))))
 
 (declare resource-paths)
 (defn- local-dep-paths
