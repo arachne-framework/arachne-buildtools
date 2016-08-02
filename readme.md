@@ -132,3 +132,14 @@ restart your JVM if you change the dependencies of a local dependency.
 
 Note that you cannot use `boot build` if your project has a local dependency
 declared.
+
+## Testing
+
+Buildtools provides enhanced testing support, wrapping the `adzerk/boot-test` Boot extension.
+
+To run the test suite, run `boot test`. This supports all the options
+supported by `adzerk/boot.test`, with the following modifications:
+
+- Tests with `:integration` metadata will not be run by default.
+- If the `-i` argumement is provided (`boot test -i`), _only_ tests with `^:integration` metadata will be run.
+- If the `-a` argument is provided (`boot test -a`), all tests will be run regardless of their metadata.
