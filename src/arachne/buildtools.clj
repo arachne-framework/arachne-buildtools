@@ -1,6 +1,7 @@
 (ns arachne.buildtools
   "Tools for building the Arachne project itself."
   {:boot/export-tasks true}
+  (:refer-clojure :exclude [test])
   (:require [clojure.set :as set]
             [clojure.java.io :as io]
             [clojure.edn :as edn]
@@ -8,6 +9,7 @@
             [boot.core :as b]
             [boot.task.built-in :as task]
             [boot.util :as bu]
+            [adzerk.boot-test :as boot-test]
             [arachne.buildtools.git :as g]))
 
 (defn- dev-dep?
@@ -149,3 +151,23 @@
   (g/throw-if-not-clean "." "Cannot build: git repository has uncommitted changes")
   (comp (task/pom) (task/jar) (task/install) (print-version)))
 
+
+(b/deftask test
+  "Run the project's unit tests"
+  [n namespaces NAMESPACE #{sym} "The set of namespace symbols to run tests in."
+   e exclusions NAMESPACE #{sym} "The set of namespace symbols to be excluded from test."
+   f filters    EXPR      #{edn} "The set of expressions to use to filter namespaces."
+   r requires   REQUIRES  #{sym} "Extra namespaces to pre-load into the pool of test pods for speed."
+   j junit-output-to JUNITOUT str "The directory where a junit formatted report will be generated for each ns"
+
+   i integration          bool   "Run only integration tests"
+   a all                  bool   "Run all tests (integration and unit)"]
+  (apply boot-test/test
+    (apply concat
+      (-> *opts*
+        (update :filters (fn [fs]
+                           (cond
+                             all fs
+                             integration (conj fs '(:integration (meta %)))
+                             :else (conj fs '(not (:integration (meta %)))))))
+        (dissoc :all :integration)))))
