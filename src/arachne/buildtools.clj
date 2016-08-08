@@ -9,6 +9,7 @@
             [boot.core :as b]
             [boot.task.built-in :as task]
             [boot.util :as bu]
+            [boot.pod :as pod]
             [adzerk.boot-test :as boot-test]
             [arachne.buildtools.git :as g]))
 
@@ -171,3 +172,19 @@
                              integration (conj fs '(:integration (meta %)))
                              :else (conj fs '(not (:integration (meta %)))))))
         (dissoc :all :integration)))))
+
+(use 'clojure.pprint)
+
+(b/deftask run
+  "Run a specific function in a pod"
+  [f function FUNCTION sym "The function to execute."
+   a args   ARGS  #{str} "Arguments to pass to the specified function."]
+  (let [pod (pod/make-pod (b/get-env))
+        fn-ns (symbol (namespace function))]
+    (try
+      (pod/with-eval-in pod
+        (require (quote ~fn-ns))
+        (apply ~function ~args))
+      (finally
+        (pod/destroy-pod pod))))
+  identity)
