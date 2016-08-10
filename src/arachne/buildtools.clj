@@ -176,15 +176,31 @@
 (use 'clojure.pprint)
 
 (b/deftask run
-  "Run a specific function in a pod"
+  "Run a specific function in a pod, terminating when the function returns"
   [f function FUNCTION sym "The function to execute."
-   a args   ARGS  #{str} "Arguments to pass to the specified function."]
+   a args     ARGS     #{str} "Arguments to pass to the specified function."]
   (let [pod (pod/make-pod (b/get-env))
         fn-ns (symbol (namespace function))]
     (try
       (pod/with-eval-in pod
         (require (quote ~fn-ns))
         (apply ~function ~args))
+      (finally
+        (pod/destroy-pod pod))))
+  identity)
+
+(b/deftask service
+  "Run a specific function in a pod, keeping the JVM running (until it recieves a kill signal)"
+  [f function FUNCTION sym "The function to execute."
+   a args     ARGS     #{str} "Arguments to pass to the specified function."]
+  (let [pod (pod/make-pod (b/get-env))
+        fn-ns (symbol (namespace function))]
+    (try
+      (pod/with-eval-in pod
+        (require (quote ~fn-ns))
+        (apply ~function ~args)
+        (while true
+          (Thread/sleep 1000)))
       (finally
         (pod/destroy-pod pod))))
   identity)
