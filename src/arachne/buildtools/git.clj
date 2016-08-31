@@ -14,6 +14,34 @@
     (when-not (s/blank? status)
       (throw (ex-info msg {:git-dir git-dir, :file f})))))
 
+(defn- validate-git-return
+  [ret dir file]
+  (when (s/blank? ret)
+    (throw (ex-info (format "Could not find git repository at %s "
+                      (.getAbsolutePath file))
+             {:dir dir
+              :file file
+              :path (.getAbsolutePath file)}))))
+
+(defn current-branch
+  "Return the current git branch, or 'HEAD' if currently in a detached
+  state, as returned by `git rev-parse --symbolic-full-name --abbrev-ref HEAD`"
+  [git-dir]
+  (let [f (.getAbsoluteFile (io/file git-dir))
+        branch (s/trim (:out (sh/sh "git" "rev-parse" "--symbolic-full-name"
+                               "--abbrev-ref" "HEAD")))]
+    (validate-git-return branch git-dir f)
+    branch))
+
+(defn current-loglenth
+  "Return the number of commits in the log of the current HEAD as given by
+  `git rev-list HEAD --count`"
+  [git-dir]
+  (let [f (.getAbsoluteFile (io/file git-dir))
+        cnt (s/trim (:out (sh/sh "git" "rev-list" "HEAD" "--count")))]
+    (validate-git-return cnt git-dir f)
+    (Integer/parseInt cnt)))
+
 (defn current-sha
   "Return the SHA of the current HEAD as given by 'git rev-parse
   --short', in the given (process relative) directory.
@@ -24,12 +52,7 @@
   [git-dir]
   (let [f (.getAbsoluteFile (io/file git-dir))
         sha (s/trim (:out (sh/sh "git" "rev-parse" "--short" "HEAD" :dir f)))]
-    (when (s/blank? sha)
-      (throw (ex-info (format "Could not find git repository at %s "
-                              (.getAbsolutePath f))
-                      {:dir git-dir
-                       :file f
-                       :path (.getAbsolutePath f)})))
+    (validate-git-return sha git-dir f)
     sha))
 
 (defn exec!

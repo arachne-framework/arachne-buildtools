@@ -38,6 +38,15 @@
     (println "Regenerating project.clj file for " (:project pom) (:version pom))
     (spit proj-file txt)))
 
+(defn left-pad
+  "Pad a string to be at least n characters, using c as the padding character"
+  [s n c]
+  (let [s (str s)
+        delta (- n (count s))]
+    (if (pos? delta)
+      (apply str (concat (repeat delta c) [s]))
+      s)))
+
 (defn- set-pom-options!
   "Imperatively set the pom task options"
   [{:keys [project version description license]}]
@@ -50,7 +59,11 @@
       :version (str major "."
                     minor "."
                     patch (cond
-                           (= :dev qualifier) (str "-dev-" (g/current-sha "."))
+                           (= :dev qualifier) (str "-" (g/current-branch ".")
+                                                   "-" (left-pad
+                                                         (g/current-loglenth ".")
+                                                         4 "0")
+                                                   "-" (g/current-sha "."))
                            qualifier (str "-" qualifier)
                            :else ""))})))
 
