@@ -217,3 +217,23 @@
       (finally
         (pod/destroy-pod pod))))
   identity)
+
+(defn- throw-if-not-dev
+  "Throw an exception if the project version doesn't have a :dev qualifier"
+  []
+  (let [filename "project.edn"
+        proj-file (io/file filename)
+        proj (edn/read-string (slurp proj-file))]
+    (when-not (= :dev (-> proj :version :qualifier))
+      (throw (ex-info (format "Can only do a dev deploy for a version ID with {:qualifier :dev}") {})))))
+
+(b/deftask deploy-dev
+  "Build the project and install to Arachne's dev Artifactory repository"
+  []
+  (throw-if-local-deps)
+  (throw-if-not-dev)
+  (g/throw-if-not-clean "." "Cannot build: git repository has uncommitted changes")
+  (comp (task/pom)
+        (task/jar)
+        (task/push :repo "arachne-dev")
+        (print-version)))
