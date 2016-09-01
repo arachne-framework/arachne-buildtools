@@ -14,3 +14,9 @@ dependencies:
 test:
   override:
     - .ci/run-tests.sh
+
+deployment:
+  dev:
+    branch: master
+    commands:
+    - boot deploy-dev

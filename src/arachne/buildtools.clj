@@ -233,7 +233,13 @@
   (throw-if-local-deps)
   (throw-if-not-dev)
   (g/throw-if-not-clean "." "Cannot build: git repository has uncommitted changes")
-  (comp (task/pom)
-        (task/jar)
-        (task/push :repo "arachne-dev")
-        (print-version)))
+  (let [user (System/getenv "ARACHNE_ARTIFACTORY_USER")
+        pass (System/getenv "ARACHNE_ARTIFACTORY_PW")]
+    (when-not (and user pass)
+      (throw (ex-info "Could not deploy to dev artifactory: ARACHNE_ARTIFACTORY_USER or ARACHNE_ARTIFACTORY_PW not set" {})))
+    (comp (task/pom)
+      (task/jar)
+      (task/push :repo-map {:url "http://maven.arachne-framework.org/artifactory/arachne-dev"
+                            :username user
+                            :password pass})
+      (print-version))))
