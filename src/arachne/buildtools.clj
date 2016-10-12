@@ -28,6 +28,7 @@
                                (filter (complement dev-dep?)
                                  (b/get-env :dependencies)))
                :source-paths (set (b/get-env :resource-paths))
+               :java-source-paths (set (b/get-env :resource-paths))
                :test-paths #{"test" "dev"}
                :profiles {:dev {:dependencies (vec
                                                 (filter dev-dep?
@@ -163,7 +164,7 @@
   []
   (throw-if-local-deps)
   (g/throw-if-not-clean "." "Cannot build: git repository has uncommitted changes")
-  (comp (task/pom) (task/jar) (task/install) (print-version)))
+  (comp (task/javac) (task/pom) (task/jar) (task/install) (print-version)))
 
 
 (b/deftask test
@@ -238,6 +239,7 @@
   (when-not (System/getenv "ARACHNE_ARTIFACTORY_USER")
     (println "ARACHNE_ARTIFACTORY_USER not set, using default of 'ci'"))
   (comp
+    (task/javac)
     (task/pom)
     (task/jar)
     (task/push :repo-map {:url "http://maven.arachne-framework.org/artifactory/arachne-dev"
