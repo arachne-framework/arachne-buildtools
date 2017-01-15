@@ -160,13 +160,24 @@
                    dep)
                  {:dep dep}))))))
 
+(b/deftask check-conflicts
+  "Verify there are no dependency conflicts."
+  []
+  (b/with-pass-thru fs
+    (require '[boot.pedantic :as pedant])
+    (let [dep-conflicts (resolve 'pedant/dep-conflicts)]
+      (if-let [conflicts (not-empty (dep-conflicts pod/env))]
+        (throw (ex-info (str "Unresolved dependency conflicts. "
+                          "Use :exclusions to resolve them!")
+                 conflicts))
+        (println "\nVerified there are no dependency conflicts.")))))
+
 (b/deftask build
   "Build the project and install to local maven repo"
   []
   (throw-if-local-deps)
   (g/throw-if-not-clean "." "Cannot build: git repository has uncommitted changes")
-  (comp (task/javac) (task/pom) (task/jar) (task/install) (print-version)))
-
+  (comp (check-conflicts) (task/javac) (task/pom) (task/jar) (task/install) (print-version)))
 
 (b/deftask test
   "Run the project's unit tests"
@@ -178,6 +189,7 @@
 
    i integration          bool   "Run only integration tests"
    a all                  bool   "Run all tests (integration and unit)"]
+  (comp (check-conflicts)
   (apply boot-test/test
     (apply concat
       (-> *opts*
@@ -186,7 +198,7 @@
                              all fs
                              integration (conj fs '(:integration (meta %)))
                              :else (conj fs '(not (:integration (meta %)))))))
-        (dissoc :all :integration)))))
+        (dissoc :all :integration))))))
 
 (use 'clojure.pprint)
 
@@ -247,3 +259,4 @@
                           :username (or (System/getenv "ARACHNE_ARTIFACTORY_USER") "ci")
                           :password (System/getenv "ARACHNE_ARTIFACTORY_PW")})
         (print-version)))
+

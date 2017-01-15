@@ -4,3 +4,5 @@ project.clj
 .git-deps
 target
 *.iml
+pom.xml
+*.asc
