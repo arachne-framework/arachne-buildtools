@@ -189,16 +189,18 @@
 
    i integration          bool   "Run only integration tests"
    a all                  bool   "Run all tests (integration and unit)"]
-  (comp (check-conflicts)
-  (apply boot-test/test
-    (apply concat
-      (-> *opts*
-        (update :filters (fn [fs]
-                           (cond
-                             all fs
-                             integration (conj fs '(:integration (meta %)))
-                             :else (conj fs '(not (:integration (meta %)))))))
-        (dissoc :all :integration))))))
+  (comp
+    (check-conflicts)
+    (task/javac)
+    (apply boot-test/test
+      (apply concat
+        (-> *opts*
+          (update :filters (fn [fs]
+                             (cond
+                               all fs
+                               integration (conj fs '(:integration (meta %)))
+                               :else (conj fs '(not (:integration (meta %)))))))
+          (dissoc :all :integration))))))
 
 (use 'clojure.pprint)
 
