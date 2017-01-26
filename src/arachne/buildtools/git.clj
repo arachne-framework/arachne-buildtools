@@ -84,4 +84,4 @@
       (exec! "git" "clone" repo clone-dir))
     (exec! "git" "checkout" ref :dir clone-dir)
     (let [result (exec! "boot" "build" :dir clone-dir)]
-      (second (re-find #"Installed Version:\s*(.*)$" (:out result))))))
+      (second (re-find #"(?m)^Installed Version:\s*(.*)$" (:out result))))))
