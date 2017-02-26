@@ -10,10 +10,16 @@
 
 (def new-deps (atom {}))
 
+;; these must be in dependency order
 (def dirs
   ["arachne-core"
    "arachne-http"
-   "arachne-pedestal"])
+   "arachne-pedestal"
+   "arachne-assets"
+   "arachne-sass"
+   "arachne-pedestal-assets"
+   "arachne-cljs"
+   "arachne-figwheel"])
 
 (defn bail [& msgs]
   (apply println msgs)
@@ -32,6 +38,9 @@
       (bail "exiting," dir "not on master branch"))
     (when-not (re-find #"nothing to commit, working tree clean" result)
       (bail "exiting," dir "is not clean"))))
+
+(defn git-pull [dir]
+  (sh "git" "pull" :dir dir))
 
 (defn maybe-replace-deps [dir]
   (println "updating dependencies for" dir)
@@ -102,6 +111,7 @@
 (println "building all")
 (doseq [dir dirs]
   (ensure-clean-git dir)
+  (git-pull dir)
   (maybe-replace-deps dir)
   (build dir))
 

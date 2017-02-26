@@ -181,10 +181,15 @@
 
 (b/deftask test
   "Run the project's unit tests"
-  [n namespaces NAMESPACE #{sym} "The set of namespace symbols to run tests in."
+  [c clojure    VERSION   str    "the version of Clojure for testing."
+   n namespaces NAMESPACE #{sym} "The set of namespace symbols to run tests in."
    e exclusions NAMESPACE #{sym} "The set of namespace symbols to be excluded from test."
    f filters    EXPR      #{edn} "The set of expressions to use to filter namespaces."
+   X exclude    REGEX     regex  "the filter for excluded namespaces"
+   I include    REGEX     regex  "the filter for included namespaces"
    r requires   REQUIRES  #{sym} "Extra namespaces to pre-load into the pool of test pods for speed."
+   s shutdown   FN        #{sym} "functions to be called prior to pod shutdown"
+   S startup    FN        #{sym} "functions to be called at pod startup"
    j junit-output-to JUNITOUT str "The directory where a junit formatted report will be generated for each ns"
 
    i integration          bool   "Run only integration tests"
@@ -195,6 +200,7 @@
     (apply boot-test/test
       (apply concat
         (-> *opts*
+          (assoc :include  #".*-test$")
           (update :filters (fn [fs]
                              (cond
                                all fs

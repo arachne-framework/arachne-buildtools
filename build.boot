@@ -3,7 +3,7 @@
 (set-env! :repositories
   #(conj % ["arachne-dev" {:url "http://maven.arachne-framework.org/artifactory/arachne-dev"}]))
 
-(set-env! :dependencies '[[adzerk/boot-test "1.1.2"]])
+(set-env! :dependencies '[[adzerk/boot-test "1.2.0"]])
 
 (require '[arachne.buildtools :refer :all])
 

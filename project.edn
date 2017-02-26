@@ -1,8 +1,8 @@
 {:project org.arachne-framework/arachne-buildtools
- :version {:major 0, :minor 3, :patch 1 :qualifier :dev}
+ :version {:major 0, :minor 3, :patch 2 :qualifier :dev}
  :description "Build tools for managing and building Arachne's core modules"
  :license {"Apache Software License 2.0" "http://www.apache.org/licenses/LICENSE-2.0"}
  :deps [[boot/core "2.6.0" :scope "test"]
         [boot/base "2.6.0" :scope "test"]
         [org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
-        [adzerk/boot-test "1.1.2"]]}
+        [adzerk/boot-test "1.2.0"]]}
